@@ -31,6 +31,10 @@ const spawn = childProcess.spawn;
 const execSync = childProcess.execSync;
 const isWindows = process.platform === 'win32';
 
+function escapeShellArg (cmd: string) {
+   return '\'' + cmd.replace(/\'/g, "'\\''") + '\'';
+}
+
 export class ChromeLauncher {
   prepared: Boolean = false
   pollInterval: number = 500
@@ -43,13 +47,15 @@ export class ChromeLauncher {
   additionalFlags: Array<string>
   chrome?: childProcess.ChildProcess
   port: number
+  userDataDir?: string
 
   // We can not use default args here due to support node pre 6.
   constructor(opts?: {
       startingUrl?: string,
       additionalFlags?: Array<string>,
       autoSelectChrome?: Boolean,
-      port?: number}) {
+      port?: number,
+      userDataDir?: string}) {
 
         opts = opts || {};
 
@@ -58,6 +64,7 @@ export class ChromeLauncher {
         this.startingUrl = defaults(opts.startingUrl, 'about:blank');
         this.additionalFlags = defaults(opts.additionalFlags, []);
         this.port = defaults(opts.port, 9222);
+        this.userDataDir = opts.userDataDir;
   }
 
   flags() {
@@ -81,7 +88,7 @@ export class ChromeLauncher {
       // Skip first run wizards
       '--no-first-run',
       // Place Chrome profile in a custom location we'll rm -rf later
-      `--user-data-dir=${this.TMP_PROFILE_DIR}`
+      `--user-data-dir=${this.userDataDir ? escapeShellArg(this.userDataDir) : this.TMP_PROFILE_DIR}`
     ];
 
     if (process.platform === 'linux') {
