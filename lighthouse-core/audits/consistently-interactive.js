@@ -50,9 +50,9 @@ class ConsistentlyInteractiveMetric extends Audit {
   /**
    * Finds all time periods where the number of inflight requests is less than or equal to the
    * number of allowed concurrent requests (2).
-   * @param {!Array<WebInspector.NetworkRequest>} networkRecords
+   * @param {!Array<!WebInspector.NetworkRequest>} networkRecords
    * @param {{timestamps: {traceEnd: number}}} traceOfTab
-   * @return {!Array<{start: number, end: number}>}
+   * @return {!Array<!TimePeriod>}
    */
   static _findNetworkQuietPeriods(networkRecords, traceOfTab) {
     const traceEnd = traceOfTab.timestamps.traceEnd;
@@ -103,9 +103,9 @@ class ConsistentlyInteractiveMetric extends Audit {
 
   /**
    * Finds all time periods where there are no long tasks.
-   * @param {!Array<{start: number, end: number}>} longTasks
+   * @param {!Array<!TimePeriod>} longTasks
    * @param {{timestamps: {navigationStart: number, traceEnd: number}}} traceOfTab
-   * @return {!Array<{start: number, end: number}>}
+   * @return {!Array<!TimePeriod>}
    */
   static _findCPUQuietPeriods(longTasks, traceOfTab) {
     const navStartTsInMs = traceOfTab.timestamps.navigationStart;
@@ -141,12 +141,12 @@ class ConsistentlyInteractiveMetric extends Audit {
 
   /**
    * Finds the first time period where a network quiet period and a CPU quiet period overlap.
-   * @param {!Array<{start: number, end: number}>} longTasks
-   * @param {!Array<WebInspector.NetworkRequest>} networkRecords
+   * @param {!Array<!TimePeriod>} longTasks
+   * @param {!Array<!WebInspector.NetworkRequest>} networkRecords
    * @param {{timestamps: {navigationStart: number, firstMeaningfulPaint: number,
    *    traceEnd: number}}} traceOfTab
-   * @return {{cpuQuietPeriod: !Object, networkQuietPeriod: !Object, cpuQuietPeriods: !Array,
-   *    networkQuietPeriods: !Array}}
+   * @return {{cpuQuietPeriod: !TimePeriod, networkQuietPeriod: !TimePeriod,
+   *    cpuQuietPeriods: !Array<!TimePeriod>, networkQuietPeriods: !Array<!TimePeriod>}}
    */
   static findOverlappingQuietPeriods(longTasks, networkRecords, traceOfTab) {
     const FMPTsInMs = traceOfTab.timestamps.firstMeaningfulPaint;
@@ -256,3 +256,11 @@ class ConsistentlyInteractiveMetric extends Audit {
 }
 
 module.exports = ConsistentlyInteractiveMetric;
+
+/**
+ * @typedef {{
+ *     start: number,
+ *     end: number,
+ * }}
+ */
+let TimePeriod; // eslint-disable-line no-unused-vars
